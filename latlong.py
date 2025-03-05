@@ -1,7 +1,6 @@
 # This program was created by Shalim Montes for the DGAH 110 Midterm on February 20, 2025
 
-## THIS PROGRAM WILL NOT WORK FOR ALL DATASETS ##
-# The program will not work correctly with special characters, US locations that are formatted as follows (City, United States)
+# The program will not work correctly with US locations that are formatted as follows (City, United States)
 # because there are duplicate cities in the US, or old names for territories/countries
 # Null entries must be specified as 'None' in the csv file
 
@@ -32,11 +31,11 @@ def getcoordinatesbycity(city):
     Returns: a tuple with the latitude and longitude of the location in that order
     This function takes in a location and geocodes it using the geopy library to return the latitude and longitude of the location
     '''
-    # Part of geopy usage policy, unfortunately makes the program run much slower
-    time.sleep(0.5)
+    # Part of Nominatim usage policy, unfortunately makes the program run much slower
+    time.sleep(1)
 
     # Checks for strings that are not valid locations
-    if (city.strip() == "None" or city.strip() == "placeOfBirth" or city.strip() == "placeOfDeath"):
+    if (city.strip() == "None"):
         return "N/A"
     else:
         try:
@@ -58,6 +57,7 @@ def main():
     '''
     with open('BirthandDeathLocations.csv', mode='r') as file:
         csvfile = csv.reader(file)
+        next(csvfile)
         # Each entry of the list is a tuple
         coordinateslist = []
         for row in csvfile:
@@ -69,31 +69,26 @@ def main():
 
     with open('Coordinates.csv', mode='w') as outfile:
         outfile.write("Latitude(Birth)" + ", " + "Longitude(Birth)" + ", " + "Latitude(Death)" + ", " + "Longitude(Death)" + "\n")
-        for i in range(1, len(coordinateslist)):
+        for i in range(0, len(coordinateslist)):
             # Element is one entry of the list and will either have two tuples or one tuple and one string (N/A)
             element = coordinateslist[i]
             birthloc = element[0]
             deathloc = element[1]
 
-            # Tuples can be casted to a list so that we can then cast that list to a string #
-
             # If both the birth and death locations are tuples i.e. ((43.66456, 65.7594), (45.31455, 96.20349))
             if (isinstance(birthloc, tuple) and isinstance(deathloc, tuple)):
-                birthloclist = list(birthloc) # Goes from (43.66456, 65.7594) to [43.66456, 65.7594]
-                birthlat = birthloclist[0]
-                birthlon = birthloclist[1]
-                deathloclist = list(deathloc)
-                deathlat = deathloclist[0]
-                deathlon = deathloclist[1]
+                birthlat = birthloc[0]
+                birthlon = birthloc[1]
+                deathlat = deathloc[0]
+                deathlon = deathloc[1]
 
                 # Writes out the latitudes and longitudes separately
                 outfile.write(str(birthlat) + ", " + str(birthlon) + ", " + str(deathlat) + ", " + str(deathlon) + "\n")
 
             # If only the birth location is a tuple i.e. ((43.66456, 65.7594), N/A)
             elif (isinstance(birthloc, tuple) and not isinstance(deathloc, tuple)):
-                birthloclist = list(birthloc)
-                birthlat = birthloclist[0]
-                birthlon = birthloclist[1]
+                birthlat = birthloc[0]
+                birthlon = birthloc[1]
                 
                 # Writes out the latitude and longitude of the birth location separately and puts in place holders
                 # for death location
@@ -101,9 +96,8 @@ def main():
 
             # If only the death location is a tuple i.e. (N/A, (43.66456, 65.7594))
             elif (not isinstance(birthloc, tuple) and isinstance(deathloc, tuple)):
-                deathloclist = list(deathloc)
-                deathlat = deathloclist[0]
-                deathlon = deathloclist[1]
+                deathlat = deathloc[0]
+                deathlon = deathloc[1]
 
                 # Writes out the latitude and longitude of the death location separately and puts in place holders
                 # for birth location
